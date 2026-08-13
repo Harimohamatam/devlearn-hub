@@ -1,0 +1,6 @@
+{
+  "name": "DevLearn - Programming Hub",
+  "description": "Student-friendly learning app with categorized programming languages, interactive quizzes by difficulty, code playgrounds, and total study time tracking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

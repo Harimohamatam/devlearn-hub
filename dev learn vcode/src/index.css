@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+/* Mobile layout guard: the app itself must never create a page-wide horizontal scrollbar. */
+html, body, #root {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+button, input, select, textarea {
+  max-width: 100%;
+}
+
+@media (max-width: 767px) {
+  pre, code {
+    max-width: 100%;
+  }
+}
