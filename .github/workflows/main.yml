@@ -3,8 +3,7 @@ name: Deploy DevLearn to GitHub Pages
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -23,19 +22,35 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Find app folder
+        id: app
+        shell: bash
+        run: |
+          if [ -f "dev learn vcode/package.json" ]; then
+            echo "dir=dev learn vcode" >> "$GITHUB_OUTPUT"
+          elif [ -f "package.json" ]; then
+            echo "dir=." >> "$GITHUB_OUTPUT"
+          else
+            echo "Could not find app package.json"
+            exit 1
+          fi
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: dev learn vcode/package-lock.json
+          cache-dependency-path: ${{ steps.app.outputs.dir }}/package-lock.json
 
       - name: Install dependencies
-        working-directory: dev learn vcode
+        working-directory: ${{ steps.app.outputs.dir }}
         run: npm ci
 
       - name: Build frontend
-        working-directory: dev learn vcode
+        working-directory: ${{ steps.app.outputs.dir }}
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         run: npm run build
 
       - name: Configure Pages
@@ -44,7 +59,7 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dev learn vcode/dist
+          path: ${{ steps.app.outputs.dir }}/dist
 
   deploy:
     environment:
@@ -56,9 +71,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-      - name: Build frontend
-        working-directory: dev learn vcode
-        env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-        run: npm run build
