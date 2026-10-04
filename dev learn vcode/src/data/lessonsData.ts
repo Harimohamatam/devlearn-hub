@@ -2010,8 +2010,116 @@ let float_point = Point { x: 1.0, y: 4.0 };`,
   }
 ];
 
+/* =========================================================
+   DEVLEARN LEARNING SYSTEM
+
+   Every lesson is placed into one of three volumes and receives
+   structured, ChatGPT-style teaching metadata while preserving
+   the original lesson content and code examples.
+   ========================================================= */
+
+const getLessonVolume = (order: number): Lesson['volume'] => {
+  if (order <= 4) return 'basic';
+  if (order <= 7) return 'in-depth';
+  return 'core';
+};
+
+function buildTeachingContent(lesson: Lesson): Lesson {
+  const title = lesson.title.replace(/^\d+\.\s*/, '');
+  const lower = title.toLowerCase();
+  const language = lesson.languageId;
+  const example = lesson.codeExamples?.[0] || '';
+
+  let whyItMatters = `This topic is important because it helps you understand how ${language} programs are built and how developers use ${title.toLowerCase()} in real applications.`;
+  let whenToUse = `Use ${title.toLowerCase()} when your program needs the behavior described in this lesson. Start with the simplest approach and add complexity only when the problem requires it.`;
+  let realWorldExample = `Imagine a real application where a developer needs to solve the kind of problem covered by ${title.toLowerCase()}. The same idea appears in websites, mobile apps, backend services, automation tools, and other software.`;
+  let commonMistakes = [
+    'Writing the code without first understanding what problem the feature solves.',
+    'Changing several parts of the example at once, making errors difficult to locate.',
+    'Ignoring the values and output produced by each step.'
+  ];
+
+  if (lower.includes('variable') || lower.includes('data type')) {
+    whyItMatters = `Programs need a way to remember information. Variables give your ${language} program named values that can be read, changed, and passed to other parts of the program.`;
+    whenToUse = 'Use variables whenever a value needs a meaningful name or needs to be reused later, such as a username, score, price, counter, or API response.';
+    realWorldExample = 'A shopping app can store the product price in one variable, the quantity in another, and calculate the total from those values. If the quantity changes, the program can calculate the new total again.';
+  } else if (lower.includes('loop')) {
+    whyItMatters = 'A loop prevents you from writing the same instructions again and again. Instead, you describe the repeated action once and let the program perform it for each required item.';
+    whenToUse = 'Use loops when the same operation must happen for many values, such as displaying products, processing marks, reading records, or repeating a task until a condition changes.';
+    realWorldExample = 'An online store may have 100 products. Instead of writing 100 separate display instructions, a loop can visit each product and create its card on the screen.';
+  } else if (lower.includes('function')) {
+    whyItMatters = 'Functions turn a repeated task into a reusable unit. They make programs easier to read, test, debug, and maintain.';
+    whenToUse = 'Use a function when a task has a clear purpose, is repeated, or should be separated from the rest of the program.';
+    realWorldExample = 'A login system may have a validatePassword function. The same function can be called from different parts of an application instead of rewriting the validation rules each time.';
+  } else if (lower.includes('array') || lower.includes('list') || lower.includes('collection')) {
+    whyItMatters = 'Real applications rarely work with only one value. Collections let a program keep related values together and process them efficiently.';
+    whenToUse = 'Use a collection when you have multiple related values, such as students, products, messages, scores, or search results.';
+    realWorldExample = 'A learning app can keep a list of completed lessons. The program can then display that list, count it, search it, or filter it to show only completed lessons.';
+  } else if (lower.includes('object') || lower.includes('class') || lower.includes('oop')) {
+    whyItMatters = 'Objects and classes help model real entities and keep related data and behavior together.';
+    whenToUse = 'Use objects or classes when a program contains entities with multiple properties and actions, especially in larger applications.';
+    realWorldExample = 'A banking application can represent an account with an account number and balance, while methods can deposit money, withdraw money, and check the balance.';
+  } else if (lower.includes('condition') || lower.includes('operator')) {
+    whyItMatters = 'Programs need to make decisions. Conditions and operators let code compare values and choose what should happen next.';
+    whenToUse = 'Use conditions when different inputs should produce different behavior, such as checking login status, age, marks, permissions, or available stock.';
+    realWorldExample = 'A website can check whether a user is logged in. If they are authenticated, it shows the dashboard; otherwise, it shows the login screen.';
+  } else if (lower.includes('error') || lower.includes('debug')) {
+    whyItMatters = 'Errors are normal during development. Proper error handling and debugging help an application fail safely and make problems easier to find.';
+    whenToUse = 'Use error handling around operations that can fail, and use debugging tools when the actual program behavior differs from what you expected.';
+    realWorldExample = 'If an application cannot reach a server, it can show a useful message instead of crashing or leaving the user staring at a broken screen.';
+  } else if (lower.includes('ownership') || lower.includes('borrow')) {
+    whyItMatters = 'Rust uses ownership and borrowing to control memory safely at compile time without relying on a garbage collector.';
+    whenToUse = 'Use borrowing when you need temporary access to data without taking ownership of it. Use ownership transfer when another part of the program should become responsible for the value.';
+    realWorldExample = 'A systems application can pass large data structures between functions without unnecessarily copying them, while Rust checks that references remain valid.';
+  } else if (lower.includes('struct') || lower.includes('enum')) {
+    whyItMatters = 'Custom data types let you represent the information your application actually works with instead of forcing everything into primitive values.';
+    whenToUse = 'Use structs for entities with named fields and enums when a value can represent one of several meaningful states or variants.';
+    realWorldExample = 'A network application can represent an IP address as a structured value and represent different message types as enum variants.';
+  } else if (lower.includes('introduction')) {
+    whyItMatters = `Before writing code, it helps to understand what ${language} is designed to solve, where it runs, and why developers choose it.`;
+    whenToUse = `Use this foundation to decide when ${language} is a good fit and to understand the terminology used in later lessons.`;
+    realWorldExample = `Think of ${language} as a tool in a developer's toolbox. Different languages are chosen for different jobs, and this lesson explains the kind of work ${language} is commonly used for.`;
+  }
+
+  const sections = lesson.sections?.length
+    ? lesson.sections
+    : [
+        {
+          id: `${lesson.id}-understand`,
+          title: 'Understand the idea',
+          content: lesson.content
+        },
+        {
+          id: `${lesson.id}-example`,
+          title: 'See it in code',
+          content: 'Read the example slowly. Identify the input, the operation being performed, and the result.',
+          code: example || undefined
+        }
+      ];
+
+  return {
+    ...lesson,
+    volume: lesson.volume ?? getLessonVolume(lesson.order),
+    sections,
+    whyItMatters: lesson.whyItMatters ?? whyItMatters,
+    howItWorks: lesson.howItWorks ?? `Start with the concept explained above, then trace the example from top to bottom. Ask yourself what each important line receives, what it changes, and what value it produces.`,
+    whenToUse: lesson.whenToUse ?? whenToUse,
+    whatHappens: lesson.whatHappens ?? `When this feature is used, ${language} follows the rules described in the lesson. The exact result depends on the values supplied to the code. Run the example and compare the output with your expectation.`,
+    realWorldExample: lesson.realWorldExample ?? realWorldExample,
+    commonMistakes: lesson.commonMistakes ?? commonMistakes,
+    keyTakeaways: lesson.keyTakeaways ?? [
+      `Understand what ${title.toLowerCase()} is before memorizing syntax.`,
+      'Trace a small example by hand before trying a larger program.',
+      'Practice changing one value at a time and observe the result.'
+    ]
+  };
+}
+
 // Add subject-focused lessons for languages that previously had fewer than 10 lessons.
+// Existing lesson content is preserved; the new teaching fields are added automatically.
 export const LESSONS: Lesson[] = [
   ...BASE_LESSONS,
-  ...SUBJECT_LESSONS.filter((lesson) => !BASE_LESSONS.some((existing) => existing.id === lesson.id))
-];
+  ...SUBJECT_LESSONS.filter(
+    (lesson) => !BASE_LESSONS.some((existing) => existing.id === lesson.id)
+  )
+].map(buildTeachingContent);
