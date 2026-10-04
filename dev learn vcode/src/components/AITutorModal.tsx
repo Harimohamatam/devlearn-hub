@@ -18,6 +18,9 @@ import {
 } from 'lucide-react';
 import { Language } from '../types';
 import { supabase } from '../lib/supabase';
+const API_BASE_URL = (
+  import.meta.env.VITE_API_BASE_URL || ''
+).replace(/\/+$/, '');
 
 interface Message {
   id: string;
@@ -855,7 +858,7 @@ export const AITutorModal: React.FC<
           }));
 
       const response = await fetch(
-        '/api/ai/tutor',
+        `${API_BASE_URL}/api/ai/tutor`,
         {
           method: 'POST',
           headers: {
