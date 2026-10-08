@@ -857,8 +857,7 @@ export const AITutorModal: React.FC<
             text: message.text
           }));
 
-      const response = await fetch(
-        `${API_BASE_URL}/api/ai/tutor`,
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/ai/tutor`, 
         {
           method: 'POST',
           headers: {
